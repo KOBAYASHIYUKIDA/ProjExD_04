@@ -362,8 +362,6 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return 0
-            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-                beams.add(Beam(bird))
             
             if event.type == pg.KEYDOWN and event.key == pg.K_RSHIFT:
                 if score.score > 100:
