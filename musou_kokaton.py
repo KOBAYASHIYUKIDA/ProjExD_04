@@ -81,6 +81,12 @@ class Bird(pg.sprite.Sprite):
         self.image = pg.transform.rotozoom(pg.image.load(f"ex04/fig/{num}.png"), 0, 2.0)
         screen.blit(self.image, self.rect)
 
+    def speed_up(self):
+        """
+        左シフトを押すとスピードアップ
+        """
+        self.speed = 50
+
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
         押下キーに応じてこうかとんを移動させる
@@ -89,7 +95,7 @@ class Bird(pg.sprite.Sprite):
         """
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
-            if key_lst[k]:
+            if key_lst[k]: 
                 self.rect.move_ip(+self.speed*mv[0], +self.speed*mv[1])
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
@@ -101,9 +107,17 @@ class Bird(pg.sprite.Sprite):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
         screen.blit(self.image, self.rect)
+
+        if key_lst[pg.K_LSHIFT]:
+            self.speed = 20
+        else:
+            self.speed = 10
+
     
     def get_direction(self) -> tuple[int, int]:
         return self.dire
+    
+    
     
 
 class Bomb(pg.sprite.Sprite):
@@ -161,6 +175,7 @@ class Beam(pg.sprite.Sprite):
         self.rect.centerx = bird.rect.centerx+bird.rect.width*self.vx
         self.speed = 10
 
+
     def update(self):
         """
         ビームを速度ベクトルself.vx, self.vyに基づき移動させる
@@ -169,6 +184,7 @@ class Beam(pg.sprite.Sprite):
         self.rect.move_ip(+self.speed*self.vx, +self.speed*self.vy)
         if check_bound(self.rect) != (True, True):
             self.kill()
+        
 
 
 class Explosion(pg.sprite.Sprite):
