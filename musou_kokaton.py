@@ -171,6 +171,25 @@ class Beam(pg.sprite.Sprite):
             self.kill()
 
 
+class Gravity(pg.sprite.Sprite):
+    """
+    重力球
+    """
+    def __init__(self, bird: Bird, life: int):
+
+        super().__init__()
+        self.image = pg.Surface((400, 400))
+        self.image.set_alpha(200)
+        self.image.set_colorkey((0, 0, 0))
+        pg.draw.circle(self.image, (10, 10, 10), (200, 200), 200)
+        self.rect = self.image.get_rect(center=bird.rect.center)
+        self.life = life
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+
 class Explosion(pg.sprite.Sprite):
     """
     爆発に関するクラス
@@ -260,6 +279,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    Gravitys = pg.sprite.Group() 
 
     tmr = 0
     clock = pg.time.Clock()
@@ -270,6 +290,9 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_TAB and score.score > 50:
+                score.score_up(-50)
+                Gravitys.add(Gravity(bird, 500)) #Tabで重力球作成。ポイント50以下で発動しない。
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -289,6 +312,10 @@ def main():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.score_up(1)  # 1点アップ
 
+        for bomb in pg.sprite.groupcollide(bombs, Gravitys, True, False):
+            exps.add(Explosion(bomb, 50))  # 爆発エフェクト
+            score.score_up(1)# 1点アップ
+
         if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
             bird.change_img(8, screen) # こうかとん悲しみエフェクト
             score.update(screen)
@@ -305,6 +332,8 @@ def main():
         bombs.draw(screen)
         exps.update()
         exps.draw(screen)
+        Gravitys.update()
+        Gravitys.draw(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
