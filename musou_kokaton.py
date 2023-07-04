@@ -171,7 +171,7 @@ class Beam(pg.sprite.Sprite):
             self.kill()
 
 
-class NeoBeam(pg.sprite.Sprite):
+class NeoBeam(pg.sprite.Sprite): #弾幕
 
     def __init__(self, bird: Bird, num):
         super().__init__()
@@ -184,7 +184,7 @@ class NeoBeam(pg.sprite.Sprite):
         a = -50
         
         for i in range(self.num):
-            NBlst.append(Beam(self.bird, math.degrees(math.atan2(-self.vy, self.vx)) + a))
+            NBlst.append(Beam(self.bird, math.degrees(math.atan2(-self.vy, self.vx)) + a)) #作ったビームをリストに入れる
             a += 100/(self.num-1)
         return NBlst
 
