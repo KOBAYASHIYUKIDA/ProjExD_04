@@ -3,6 +3,7 @@ import random
 import sys
 import time
 
+
 import pygame as pg
 
 
@@ -295,12 +296,32 @@ class Score:
         self.rect = self.image.get_rect()
         self.rect.center = 100, HEIGHT-50
 
-    def score_up(self, add):
+    def score_up(self, add): #スコアを加算
         self.score += add
+
 
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Score: {self.score}", 0, self.color)
         screen.blit(self.image, self.rect)
+
+
+class Shield(pg.sprite.Sprite): #防御壁に関するクラス
+    def __init__(self, bird: Bird, life: int):
+        super().__init__()
+        vx, vy  =  bird.dire
+        theta = math.atan2(-vy, vx)
+        angle = math.degrees(theta)
+        self.image = pg.transform.rotozoom(pg.Surface((20, bird.rect.height*2)), angle, 1.0)
+        pg.draw.rect(self.image, (0, 0, 0), pg.Rect(0, 0, 20, bird.rect.height*2))
+        self.rect = self.image.get_rect()
+        self.rect.centerx = bird.rect.centerx + bird.rect.width * vx
+        self.rect.centery = bird.rect.centery + bird.rect.height * vy
+        self.life = life
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
 
 
 def main():
@@ -314,7 +335,8 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
-    Gravitys = pg.sprite.Group() 
+    shields = pg.sprite.Group()
+    Gravitys = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -325,6 +347,10 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_CAPSLOCK and len(shields) == 0: #CapsLockキーが押されたら
+                if score.score > 50: #スコアが50以下なら
+                    shields.add(Shield(bird, 400)) 
+                    score.score_up(-50) #消費スコア
             if event.type == pg.KEYDOWN and event.key == pg.K_TAB and score.score > 50:
                 score.score_up(-50)
                 Gravitys.add(Gravity(bird, 500)) #Tabで重力球作成。ポイント50以下で発動しない。
@@ -364,6 +390,10 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+        
+        for bomb in pg.sprite.groupcollide(shields, bombs, False, True).keys():
+            exps.add(Explosion(bomb, 50))  
+            score.score_up(1)  # 1点アップ
 
         bird.update(key_lst, screen)
         beams.update()
@@ -377,6 +407,8 @@ def main():
         Gravitys.update()
         Gravitys.draw(screen)
         score.update(screen)
+        shields.update()
+        shields.draw(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
